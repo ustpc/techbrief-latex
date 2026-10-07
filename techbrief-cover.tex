@@ -1,0 +1,135 @@
+%% techbrief-cover.tex -- cover art for the TechBrief title banner.
+%%
+%% A vector redraw of the Issue 18 cover ("A" emblem in a broken ring with
+%% connector nodes, over a circuit-board field).  Replace \tbcoverart (or
+%% use \techbriefcover{...} in the document) to give an issue its own art.
+%%
+%% The picture is 202.9bp x 201.1bp.  Internally it is drawn in units of
+%% the original 1158 x 1148 artwork, with y pointing up, so coordinates
+%% can be read straight off a sketch.
+\newdimen\tbpx \tbpx=0.17520bp % one pixel of the original artwork
+\newcommand*\tbcoverart{%
+\begin{tikzpicture}[x=0.17520bp,y=0.17518bp,line join=round,
+    trace/.style={draw=tbctrace,line width=2.6\tbpx,line cap=round},
+    pad/.style={draw=tbcpad,line width=2.6\tbpx,fill=tbcbgdark},
+    via/.style={fill=tbctrace},
+    glow/.style={fill=tbcglow}]
+  \useasboundingbox (0,0) rectangle (1158,1148);
+  \clip (0,0) rectangle (1158,1148);
+  \coordinate (C) at (665,648);
+  % ---------------------------------------------------------------
+  % Background: deep navy, lifted behind the emblem.
+  \fill[tbcbgdark] (0,0) rectangle (1158,1148);
+  \shade[inner color=tbcbglight,outer color=tbcbgdark]
+    (C) circle (760);
+  % ---------------------------------------------------------------
+  % Circuit traces: PCB-style runs that leave the ring radially,
+  % break 45 degrees, and end on a pad.  Deterministic (fixed seed).
+  \begin{scope}
+    \clip (0,0) rectangle (1158,1148);
+    \pgfmathsetseed{1810}
+    \foreach \i in {1,...,96} {
+      \pgfmathsetmacro\a{\i*3.75 + 1.8*rand}
+      \pgfmathsetmacro\r{425 + 110*rnd}
+      \pgfmathsetmacro\d{45*round(\a/45)}
+      \pgfmathsetmacro\la{30 + 110*rnd}
+      \pgfmathsetmacro\t{ifthenelse(rnd<0.5,-45,45)}
+      \pgfmathsetmacro\lb{60 + 280*rnd}
+      \pgfmathsetmacro\pad{rnd}
+      \draw[trace] ($(C)+(\a:\r)$) coordinate (s)
+        -- ++(\d:\la) -- ++(\d+\t:\lb) coordinate (e);
+      \ifdim\pad pt<0.7pt \draw[pad] (e) circle (7.5);
+      \else \fill[via] (e) circle (6); \fi
+      \ifdim\pad pt<0.25pt \fill[via] (s) circle (5.5); \fi
+    }
+    % A second, sparser field toward the corners.
+    \foreach \i in {1,...,72} {
+      \pgfmathsetmacro\a{\i*5 + 2.5*rand}
+      \pgfmathsetmacro\r{620 + 160*rnd}
+      \pgfmathsetmacro\d{90*round(\a/90)}
+      \pgfmathsetmacro\la{40 + 140*rnd}
+      \pgfmathsetmacro\t{ifthenelse(rnd<0.5,-45,45)}
+      \pgfmathsetmacro\lb{40 + 160*rnd}
+      \draw[trace] ($(C)+(\a:\r)$) -- ++(\d:\la)
+        -- ++(\d+\t:\lb) coordinate (e);
+      \draw[pad] (e) circle (7.5);
+    }
+    % Glowing vias.
+    \foreach \p in {(878,1048),(190,733),(192,693),(35,316),(340,223),
+        (885,108),(1105,88),(1060,903),(880,218),(630,153),(95,1005),
+        (1120,560)} {
+      \fill[glow,opacity=.10] \p circle (22);
+      \fill[glow,opacity=.22] \p circle (12);
+      \fill[tbcglowcore] \p circle (6.5);
+    }
+  \end{scope}
+  % ---------------------------------------------------------------
+  % Emblem geometry.  Ring: centre C, radii 370..394.
+  \def\tbarc##1##2{%
+    ($(C)+(##1:394)$) arc[start angle=##1,end angle=##2,radius=394]
+    -- ($(C)+(##2:370)$) arc[start angle=##2,end angle=##1,radius=370]
+    -- cycle}
+  % The "A": apex, tapered right leg with a rounded foot, and a left
+  % leg that runs down into the ring and is trimmed by its outer edge.
+  \def\tbA{%
+    (600,828) [rounded corners=14\tbpx] -- (668,828) [rounded corners=0]
+    -- (680,820) [rounded corners=8\tbpx] -- (892,404)
+    [rounded corners=26\tbpx] -- (842,386) -- (790,443)
+    [rounded corners=0] -- (640,693) -- (440,323) -- (300,300) -- cycle}
+  \def\tbclipA{(C) circle (394)}
+  % Connectors (centre lines) and nodes.
+  \def\tbstemL{(360,638) .. controls (520,640) and (628,548) .. (623,340)}
+  \def\tbstemR{(852,842) .. controls (826,786) and (782,744) .. (712,708)}
+  % ---------------------------------------------------------------
+  % Soft drop shadow for the whole emblem.
+  \begin{scope}[shift={(10,-14)},tbcshadow]
+    \fill \tbarc{167}{62};  \fill \tbarc{35}{-82};  \fill \tbarc{196}{236};
+    \begin{scope}\clip \tbclipA; \fill \tbA; \end{scope}
+    \draw[line width=26\tbpx] \tbstemL;  \draw[line width=22\tbpx] \tbstemR;
+    \fill (315,638) circle (68);  \fill (623,277) circle (71);
+    \fill (890,898) circle (72);
+  \end{scope}
+  % ---------------------------------------------------------------
+  % Ring segments.
+  \shade[left color=tbcsilver,right color=tbcsteel,shading angle=60]
+    \tbarc{167}{62};
+  \shade[top color=tbcblue,bottom color=tbcbluedeep] \tbarc{35}{-82};
+  \shade[top color=tbcsilvermid,bottom color=tbcsteel] \tbarc{196}{236};
+  % Right-hand connector runs under the A.
+  \draw[line width=22\tbpx,tbcbluemid] \tbstemR;
+  \shade[top color=tbcblue,bottom color=tbcbluedeep] (890,898) circle (72);
+  % The A.
+  \begin{scope}
+    \clip \tbclipA;
+    \shade[top color=tbcsilver,bottom color=tbcsteelblue,shading angle=-18]
+      \tbA;
+    \draw[white,opacity=.35,line width=2.5\tbpx] \tbA;
+  \end{scope}
+  % Left-hand connector crosses over the A's left leg; a dark keyline
+  % cuts the leg so the connector reads as passing in front.
+  \draw[line width=50\tbpx,tbcbgdark,opacity=.92] \tbstemL;
+  \draw[line width=26\tbpx,tbcsilvermid] \tbstemL;
+  \shade[top color=tbcsilver,bottom color=tbcsilvermid] (315,638) circle (68);
+  \shade[top color=tbcsilvermid,bottom color=tbcsteel] (623,277) circle (71);
+  % Bevel highlights on the nodes.
+  \draw[white,opacity=.30,line width=2.5\tbpx] (315,638) circle (67);
+  \draw[white,opacity=.25,line width=2.5\tbpx] (623,277) circle (70);
+  \draw[white,opacity=.25,line width=2.5\tbpx] (890,898) circle (71);
+\end{tikzpicture}}
+
+% Palette (sampled from the original artwork).
+\definecolor{tbcbgdark}{HTML}{050A15}
+\definecolor{tbcbglight}{HTML}{0F1F3D}
+\definecolor{tbctrace}{HTML}{18305E}
+\definecolor{tbcpad}{HTML}{26457F}
+\definecolor{tbcglow}{HTML}{3D74F0}
+\definecolor{tbcglowcore}{HTML}{7FA6FF}
+\definecolor{tbcsilver}{HTML}{CBD5E8}
+\definecolor{tbcsilvermid}{HTML}{A2B1CE}
+\definecolor{tbcsteel}{HTML}{7183B2}
+\definecolor{tbcsteelblue}{HTML}{4A6BB4}
+\definecolor{tbcblue}{HTML}{5F8BDB}
+\definecolor{tbcbluemid}{HTML}{4F7ACC}
+\definecolor{tbcbluedeep}{HTML}{3459AE}
+\tikzset{tbcshadow/.style={black,opacity=.45}}
+\endinput

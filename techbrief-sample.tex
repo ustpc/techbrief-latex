@@ -1,0 +1,332 @@
+%%
+%% This is file `acmlarge.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `all,acmlarge')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from acmlarge.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%%
+%% Commands for TeXCount
+%TC:macro \cite [option:text,text]
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+%%
+%% techbrief-sample.tex -- an ACM TechBrief, typeset with the unmodified
+%% acmart class plus techbrief.sty.  Derived from the acmart sample
+%% acmlarge.tex (single column, US Letter); the content reproduces
+%% ACM TechBrief Issue 18 (Spring 2026), doi:10.1145/3819832.
+%%
+%% Build with `make` (LuaLaTeX + BibTeX via latexmk).
+%%
+%% The `nonacm' option switches off the ACM journal furniture (reference
+%% format block, CCS concepts, copyright box); techbrief.sty supplies
+%% the TechBrief banner, running heads, frame and back page instead.
+%% `natbib=false' lets techbrief.sty use acmart's biblatex style
+%% (acmnumeric), with references numbered in citation order and \cite
+%% producing superscripts.
+\documentclass[acmlarge,nonacm,natbib=false]{acmart}
+\usepackage{techbrief}
+
+%% Bibliography sources (one \addbibresource command per source).
+\addbibresource{techbrief-sample.bib}
+
+%% Bibliographic information, printed on the back page.
+\acmDOI{10.1145/3819832}
+\acmISBN{979-8-4007-2785-6}
+
+%% Issue information, printed in the footer of every page.
+\techbriefissue{Spring 2026}{18}
+
+%% Acknowledgments, printed in the panel at the foot of the back page.
+\techbriefacknowledgments{The authors would like to thank the following
+  subject-matter experts for their reviews and input: Mr.~Gerhard
+  Schimpf, Dr.~Benjamin Cedric Larsen, and Dr.~Geoff Cohen. A thank you
+  to the ACM TechBrief Committee and the ACM Technology Policy Council
+  for their valuable input. The PDF version of the document meets WCAG
+  2.2 Level AA accessibility standards and complies with the PDF
+  Accessibility Checker (PAC2024) requirements.}
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter, the short title used
+%% in the running head of pages 2 onward.  Use \\ in the full title to
+%% control where the banner title breaks.
+\title[Autonomy, Opportunities, and Challenges]{Autonomy, Opportunities,
+  and Challenges\\of Action-Taking AI Systems}
+
+%%
+%% Authors, in byline order.  Only the names are printed.
+\author{Rohith Nama}
+\author{Dr.~Larry Medsker}
+\author{Brian Peretti}
+
+\maketechbrief
+
+\begin{techbriefbody}
+Agentic AI systems include an AI component that plans and executes
+sequences of actions toward a user-defined goal, accessing external
+software, data, and services along the way. As capabilities continue to
+advance, defining Agentic Systems will evolve. Earlier AI systems with a
+chat interface produced text or other content for human review; agentic
+systems can take actions with real-world consequences, such as browsing
+the web, writing and executing code, sending messages to other agents or
+humans, and managing files. The decision of how much human oversight and
+control to exert over agentic AI systems depends on policy and design.
+Even with oversight, users must delegate some authority to these systems
+to act on their behalf.
+
+%% \looseness=-1 is ordinary copyfitting: it asks TeX to set this
+%% paragraph one line shorter, which keeps the first page's layout.
+\looseness=-1
+This shift from output-generating to action-taking systems introduces
+risks and responsibilities that existing legal, regulatory, and technical
+frameworks do not currently address. Adoption is accelerating: a 2025
+survey of over 500 technology leaders found that 48\% are already
+adopting or deploying agentic AI.\cite{ey2025pulse} With national and
+sub-national laws coming online, agentic AI raises questions that these
+frameworks, designed primarily for generative AI, do not fully address.
+
+Agentic AI systems are typically built on large language models and
+inherit the limitations of chat-based AI, including hallucination and
+bias. Autonomy exists on a continuum: some require explicit authorization
+for every action; others operate completely independently toward a
+stated goal. Most require human approval for consequential actions, but
+approval can be waived over time. The boundary between autonomous and
+supervised actions is a design choice that can change without user
+notification.
+
+\begin{techbrieftable}{Differences between chat-based AI and agentic AI systems}
+    {L{115.3bp}L{171.7bp}L{228.6bp}}
+  \rowcolor{tbblue}
+    & \tbhead{Chat-based AI} & \tbhead{Agentic AI} \tbheadend
+  \tbrowhead{Primary mechanism}
+    & Produces content in response to a prompt
+    & Plans and executes multi-step tasks to achieve a goal \\
+  \tbrowhead{Human role}
+    & User reviews output before acting
+    & User sets goal; agent acts without step-by-step approval \\
+  \tbrowhead{External access}
+    & Limited; may browse the web, but does not write to external systems
+    & Reads from and writes to external systems with software interfaces \\
+  \tbrowhead{Error recovery}
+    & User has the opportunity to review the output before acting on it
+    & Agents may act on an error before human review. Agents may provide
+      an ``undo'' feature that may attempt to revert external changes. \\
+  \tbrowhead{Accountability}
+    & Typically attributed to the user who acts on the output
+    & Potentially distributed across model provider, framework, deployer,
+      and user \\
+  \tbrowhead{Primary security concern}
+    & Hallucination, bias, insecurely generated code, and reproduction of
+      copyrighted content
+    & Prompt injection, tool misuse, cascading failures, plus concerns
+      from Chat-based systems. \\
+\end{techbrieftable}
+
+\section*{Key Policy Dimensions}
+
+\runinhead{Legal Responsibility and Liability.} Agentic AI users
+typically define high-level goals without specifying operational
+boundaries, such as stop conditions or escalation triggers.
+Accountability for harms caused by these systems is thus diffused in ways
+that existing legal doctrines were not designed to handle. Responsibility
+may be attributed to the model provider, framework developer, deployer,
+or end user, as each shapes the system's behavior, but none controls any
+specific action. This makes it difficult to assess responsibility for
+harms after the fact.
+
+\begin{itemize}
+\item In one incident, an AI coding agent deleted a company's entire
+  production database despite explicit instructions to make no changes.
+  Responsibility for the losses might be attributed to the company that
+  deployed the agent, the platform provider, the model provider, or the
+  developer who commanded the agent and configured its permissions. No
+  person made ``the decision'' to delete the database, yet harm was
+  done.\cite{nolan2025replit}
+\item There is no case law applying existing doctrines such as product
+  liability, negligence, and software licensing to Agentic AI. Software
+  licensing allocates risk through contractual terms, but these may not
+  map to systems that take autonomous actions affecting third parties not
+  party to the license.\cite{bertolini2025liability}
+\item The European Parliament's 2025 study on AI civil liability found
+  that existing product liability rules struggle with autonomous AI
+  systems, making causation and fault difficult to establish across AI
+  supply chains.
+\item Accountability may also depend on uneven infrastructure across
+  deployments, including audit trails, replayable action logs, and
+  standardized incident reporting. Where such infrastructure is absent,
+  establishing what happened and why is difficult, regardless of how
+  liability rules are framed.
+\end{itemize}
+
+\begin{takeaway}
+Resolving liability questions for agentic AI will likely require both
+substantive legal clarification and parallel investment in the technical
+mechanisms needed to apply it.
+\end{takeaway}
+
+\runinhead{Security and Operational Risk.} Agentic AI introduces
+security challenges beyond those of chat-based systems.
+
+\begin{itemize}
+\item Because LLMs process text as both data and commands, Agentic AI
+  systems cannot reliably distinguish between legitimate content and
+  embedded instructions.\cite{perez2022ignore}
+  \begin{itemize}
+  \item In one case, malicious instructions embedded in a Slack message
+    caused an AI agent to retrieve and expose content from private
+    channels without any user action.\cite{promptarmor2024slack}
+  \end{itemize}
+\item Agents that retain memory across sessions may also be vulnerable to
+  memory poisoning, where malicious inputs persist and influence future
+  actions.
+\item Agents are often configured with broad access rather than
+  permissions scoped to specific actions, which can increase exposure
+  when errors occur.
+\item Additional concerns include vulnerabilities in agent-generated
+  code, unauthorized access to copyrighted data, and risks from
+  third-party extensions and plugins.
+\item Although guardrail frameworks that monitor agent behavior and
+  detect prompt injection are under development, none currently provide
+  comprehensive protection.\cite{rebedea2023nemo,chennabasappa2025llamafirewall}
+\end{itemize}
+
+\begin{takeaway}[12bp]
+Agentic systems' security depends on choices about permissions,
+oversight, and the boundaries of autonomous action, choices that are
+both technical and organizational.
+\end{takeaway}
+
+\runinhead{Consumer Transparency and Recourse.} When an AI agent acts on
+an individual's behalf, the user may not know what systems the agent can
+connect to, what actions it can take without explicit confirmation, or
+how to revoke permissions once granted. No standardized disclosure format
+currently exists for agent permissions.
+
+\begin{itemize}
+\item OpenClaw can read and send emails, manage calendars, and execute
+  terminal commands through consumer messaging apps, accumulating more
+  than 300,000 users within weeks of its 2025
+  release.\cite{zaitsev2026openclaw} Security researchers found that
+  approximately 12\% of third-party extensions in its marketplace
+  contained malicious code, including keyloggers and data exfiltration
+  tools.\cite{chang2026openclaw}
+\item Because many agents communicate in natural language and exhibit
+  human-like responsiveness, users may develop trust in their
+  reliability, particularly in sensitive domains such as healthcare,
+  where an agent's confident tone can mask clinical
+  uncertainty.\cite{bellogin2025systemic}
+\item Agents that act through natural language interfaces can also
+  introduce language-mediated harms. An agent that sends an email or
+  schedules a meeting on a user's behalf may damage relationships,
+  reputation, or trigger legal exposure.
+\end{itemize}
+
+\begin{takeaway}
+Consumer transparency for agentic AI involves disclosing that an AI is in
+use, making the scope of an agent's authority visible, and accounting for
+potential harms.
+\end{takeaway}
+
+\runinhead{Multi-Agent Coordination Risks.} When multiple agents interact
+in coordinated networks, they can produce unexpected outcomes.
+Multi-agent networks may also reinforce one another's errors, a pattern
+called conformity bias.\cite{schroederdewitt2025multiagent,ashery2025emergent}
+
+\runinhead{Workforce and Societal Impact.} Organizations view agentic AI
+as a means to reduce current headcount, particularly in entry- and
+mid-level roles. A 2025 Gartner survey of supply chain leaders found that
+55\% expect agentic AI to reduce hiring for entry-level positions, and
+51\% believe the technology will drive a shift to overall workforce
+reductions.\cite{gartner2026survey} Similar dynamics are happening across
+multiple sectors.
+
+\begin{itemize}
+\item Reductions in entry-level positions will likely shrink pathways
+  through which workers traditionally develop expertise. Where junior
+  roles disappear, the path to mid-career and senior expertise narrows,
+  raising questions about how skills and judgment are formed in fields
+  where hands-on practice has been essential.
+\item Independent studies measuring the actual effects of agentic AI on
+  organizational effectiveness, service quality, employment composition,
+  or equity remain limited. Productivity claims have not been
+  independently verified at scale, even as those claims are already
+  shaping hiring decisions.
+\end{itemize}
+
+\begin{takeaway}[12bp]
+Accelerating displacement, narrowing entry pathways, and unverified
+productivity gains may have long-term effects on skill formation and
+labor markets that are not yet measurable but are already shaping
+organizational behavior. Tracking these effects systematically may be a
+precondition for informed labor and education policy responses.
+\end{takeaway}
+
+\section*{Conclusion}
+
+Agentic AI represents a shift from AI systems that generate content for
+human review to systems that take actions on humans' behalf. This raises
+questions about legal liability, consumer transparency, and regulatory
+adequacy that are distinct from earlier generations of AI.
+
+Many technical and operational challenges are being addressed in
+industries through risk management, engineering practices, and emerging
+standards. Relevant standards efforts are underway, including NIST's AI
+Agent Standards Initiative, OECD analytical frameworks, and
+industry-funded research into secure agent ecosystems.\cite{nist2026caisi}
+Yet while enterprise deployments often involve staged integration and
+constrained environments, consumer-facing systems are progressing with
+less structured oversight.
+
+In sectors such as healthcare, financial services, and critical
+infrastructure, where existing frameworks assume a human decision-maker,
+existing law may need to be supplemented by sector-specific guidance
+tailored to autonomous systems. Agentic systems that operate across
+jurisdictions for a single task also raise cross-border accountability
+questions that existing international mechanisms have yet to address.
+
+A central policy question is who is responsible when autonomous systems
+cause harm, and how to ensure adequate consumer transparency when agents
+act on an individual's behalf. The technical question is how to make AI
+Agentic Systems reliably follow the policies that they are given. To
+align these goals, safeguards such as defined authentication and
+delegation, the ability to audit and monitor systems, support for
+investigations and fault determination, and further research into
+inter-agent dynamics are needed.\cite{schmidt2025secure}
+\end{techbriefbody}
+
+%%
+%% The back page: references, with the "Additional Information" and
+%% acknowledgments panel at the foot.
+\techbriefbackpage
+\printbibliography
+
+\end{document}
+\endinput
+%%
+%% End of file `techbrief-sample.tex'.

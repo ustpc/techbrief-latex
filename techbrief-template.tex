@@ -1,0 +1,111 @@
+%%
+%% techbrief-template.tex -- a blank ACM TechBrief, ready to fill in.
+%%
+%% Copy this file (and techbrief-template.bib) under a new name, replace
+%% every ALL-CAPS placeholder, and build with
+%%
+%%     make DOC=<your-file-name-without-.tex>
+%%
+%% Everything marked "CHANGE" is per issue; everything else is part of
+%% the TechBrief design and normally left alone.  README.md documents
+%% every command; techbrief-sample.tex is a complete worked example
+%% (Issue 18).
+%%
+%% Uses the unmodified acmart class plus techbrief.sty.  Compile with
+%% LuaLaTeX and biber (the Makefile does this for you).
+%%
+\documentclass[acmlarge,nonacm,natbib=false]{acmart}
+\usepackage{techbrief}
+
+%% CHANGE: your bibliography file(s), one \addbibresource per file.
+\addbibresource{techbrief-template.bib}
+
+%% CHANGE: DOI and ISBN, printed at the foot of the back page.
+\acmDOI{10.1145/XXXXXXX}
+\acmISBN{979-8-4007-XXXX-X}
+
+%% CHANGE: season and issue number, printed in every page footer.
+\techbriefissue{SEASON YEAR}{NN}
+
+%% CHANGE: acknowledgments, printed in the panel on the back page.
+\techbriefacknowledgments{The authors would like to thank REVIEWERS for
+  their reviews and input. A thank you to the ACM TechBrief Committee and
+  the ACM Technology Policy Council for their valuable input.}
+
+%% OPTIONAL: cover art for this issue (202.9bp wide x 201.1bp high).
+%% Without this line the Issue 18 cover is used.  Prefer vector art: a
+%% TikZ picture, or a PDF via \includegraphics.
+% \techbriefcover{\includegraphics[width=202.9bp,height=201.1bp]{cover.pdf}}
+
+\begin{document}
+
+%% CHANGE: the title.  The optional argument is the short title used in
+%% the running head on pages 2 onward (keep it under about 40
+%% characters).  Use \\ to choose where the two-line banner title breaks.
+\title[SHORT TITLE FOR THE RUNNING HEAD]{FULL TITLE OF THE TECHBRIEF,\\
+  ON NO MORE THAN TWO LINES}
+
+%% CHANGE: authors, one \author per person, in byline order.  The byline
+%% reads "by A, B, and C".
+\author{FIRST AUTHOR}
+\author{SECOND AUTHOR}
+\author{THIRD AUTHOR}
+
+\maketechbrief
+
+\begin{techbriefbody}
+%% The opening paragraphs: what the technology is and why it matters to
+%% policy makers.  Cite sources with \cite{key}; citations print as
+%% superscripts and are numbered in the order they are first cited.
+INTRODUCTORY PARAGRAPH. State the issue in plain language and define
+any technical terms.\cite{example2025report}
+
+SECOND PARAGRAPH. Explain why the issue matters now.
+
+%% A table (optional).  Column widths must add up to 515.6bp; each L{}
+%% column includes a 6bp gutter on its right.  End the header row with
+%% \tbheadend and every other row with \\.
+\begin{techbrieftable}{TABLE CAPTION}
+    {L{115.3bp}L{171.7bp}L{228.6bp}}
+  \rowcolor{tbblue}
+    & \tbhead{COLUMN A} & \tbhead{COLUMN B} \tbheadend
+  \tbrowhead{ROW ONE}   & CELL & CELL \\
+  \tbrowhead{ROW TWO}   & CELL & CELL \\
+\end{techbrieftable}
+
+\section*{Key Policy Dimensions}
+
+\runinhead{FIRST DIMENSION.} PARAGRAPH introducing the first policy
+dimension.
+
+\begin{itemize}
+\item FIRST POINT.\cite{example2024article}
+\item SECOND POINT.
+  \begin{itemize}
+  \item A SUB-POINT (one level of nesting is supported).
+  \end{itemize}
+\end{itemize}
+
+%% An italic summary sentence.  Use \begin{takeaway}[12bp] to indent it
+%% to the bullet text.
+\begin{takeaway}
+ONE-SENTENCE TAKEAWAY for this dimension.
+\end{takeaway}
+
+\runinhead{SECOND DIMENSION.} PARAGRAPH.
+
+\section*{Conclusion}
+
+CONCLUDING PARAGRAPHS summarizing the policy questions raised.
+\end{techbriefbody}
+
+%%
+%% The back page: references at the top, and the Additional Information /
+%% Acknowledgments panel at the foot (filled in automatically).
+\techbriefbackpage
+\printbibliography
+
+\end{document}
+\endinput
+%%
+%% End of file `techbrief-template.tex'.

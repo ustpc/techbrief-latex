@@ -1,0 +1,462 @@
+%% techbrief.sty -- ACM TechBrief layout on top of the unmodified acmart class.
+%%
+%% Usage:
+%%   \documentclass[acmlarge,nonacm,natbib=false]{acmart}
+%%   \usepackage{techbrief}
+%%   \addbibresource{refs.bib}
+%%   ...
+%%   \maketechbrief
+%%   \begin{techbriefbody} ... \end{techbriefbody}
+%%   \techbriefbackpage
+%%   \printbibliography
+%%
+%% See techbrief-sample.tex for the full set of commands.
+%%
+%% Compile with LuaLaTeX (or XeLaTeX); the layout needs OpenType fonts.
+%%
+%% All dimensions are in big points (bp, 1/72in) because they were
+%% measured from the published PDF (Issue 18, doi:10.1145/3819832).
+%%
+%% Free stand-ins for the original typefaces:
+%%   Arnhem (body, headings, table)  -> Source Serif Pro
+%%   Verdana (banner, running head)  -> DejaVu Sans
+%%   Myriad Pro (footer, logo text)  -> Source Sans Pro
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{techbrief}[2026/10/06 v1.0 ACM TechBrief layout for acmart]
+
+\RequirePackage{iftex}
+\ifPDFTeX
+  \PackageError{techbrief}{Please compile with LuaLaTeX or XeLaTeX}
+    {The TechBrief layout uses OpenType fonts through fontspec.}
+\fi
+
+\RequirePackage{fontspec}
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{enumitem}
+\RequirePackage{array}
+\RequirePackage{colortbl}
+\RequirePackage{ccicons}
+\@ifpackageloaded{natbib}{%
+  \PackageError{techbrief}{Load acmart with the natbib=false option}
+    {TechBriefs use biblatex (acmart's acmnumeric style) so that
+     references appear in citation order.}}{}
+\RequirePackage[datamodel=acmdatamodel,style=acmnumeric,
+  sorting=none,autocite=superscript,maxbibnames=99]{biblatex}
+
+%% ---------------------------------------------------------------------
+%% Colours (from the original's CMYK separations, as rendered RGB).
+\definecolor{tbnavy}{HTML}{004278}   % banners, headings, footer text
+\definecolor{tbblue}{HTML}{005697}   % title strip, table header
+\definecolor{tbsky}{HTML}{71CEF5}    % "Briefs", logo diamond on navy
+\definecolor{tbpale}{HTML}{E2F4FD}   % footer panels
+\definecolor{tbink}{HTML}{231F20}    % text and rules
+\definecolor{tblogoblue}{HTML}{0093D0}
+\definecolor{tblogodeep}{HTML}{005EAB}
+
+%% ---------------------------------------------------------------------
+%% Fonts.
+\setmainfont{SourceSerifPro}[
+  Extension=.otf,
+  UprightFont=*-Regular, ItalicFont=*-RegularIt,
+  BoldFont=*-Bold, BoldItalicFont=*-BoldIt,
+  LetterSpace=-0.5, Numbers=Lining]
+\setsansfont{SourceSansPro}[
+  Extension=.otf,
+  UprightFont=*-Regular, ItalicFont=*-RegularIt,
+  BoldFont=*-Semibold, BoldItalicFont=*-SemiboldIt]
+\newfontfamily\tb@black{SourceSerifPro-Black.otf}[Numbers=Lining]
+\newfontfamily\tb@verdana{DejaVuSans}[
+  Extension=.ttf, UprightFont=*, BoldFont=*-Bold]
+\newfontfamily\tb@verdanacaps{DejaVuSans-Bold.ttf}[LetterSpace=4.7]
+\newfontfamily\tb@myriad{SourceSansPro}[
+  Extension=.otf, UprightFont=*-Regular, BoldFont=*-Semibold]
+
+\renewcommand\normalsize{\@setfontsize\normalsize{10bp}{11.5bp}}
+\newcommand\tb@tablesize{\fontsize{9bp}{10.5bp}\selectfont}
+\newcommand\tb@bibsize{\fontsize{7bp}{7.25bp}\selectfont}
+\newcommand\tb@smallprint{\fontsize{8bp}{8.75bp}\selectfont
+  \lineskiplimit=-\maxdimen}
+
+%% ---------------------------------------------------------------------
+%% Page geometry: the body sits in a ruled frame 540bp wide, 84.1bp from
+%% the top (below the running banner) and 48.1bp from the bottom.
+\geometry{reset,paperwidth=612bp,paperheight=792bp,
+  left=36bp,right=36bp,top=84.1bp,bottom=48.1bp,
+  nohead,nofoot,nomarginpar}
+
+\def\ps@techbrief{\let\@oddhead\@empty\let\@evenhead\@empty
+  \let\@oddfoot\@empty\let\@evenfoot\@empty}
+
+\setlength\parindent{0pt}
+\setlength\parskip{4bp}
+\urlstyle{same}
+\AtBeginDocument{%
+  \pagestyle{techbrief}%
+  \setlength\parindent{0pt}%
+  \setlength\parskip{4bp}%
+  \hypersetup{hidelinks}%
+  \color{tbink}}
+
+%% ---------------------------------------------------------------------
+%% Issue metadata.
+\newcommand\tb@season{Season Year}
+\newcommand\tb@issue{N}
+\newcommand\techbriefissue[2]{\def\tb@season{#1}\def\tb@issue{#2}}
+\newcommand\tb@ack{}
+\newcommand\techbriefacknowledgments[1]{\def\tb@ack{#1}}
+\newcommand\tb@url{acm.org/public-policy/techbriefs}
+
+%% "A, B, and C" from acmart's \authors list ("A\and B\and C").
+\ExplSyntaxOn
+\seq_new:N \l__techbrief_authors_seq
+\cs_new_protected:Npn \tb@byline
+  {
+    \seq_set_split:NnV \l__techbrief_authors_seq { \and } \authors
+    \seq_use:Nnnn \l__techbrief_authors_seq
+      { ~and~ } { ,~ } { ,~and~ }
+  }
+\tl_new:N \l__techbrief_pdfauthor_tl
+\cs_new_protected:Npn \tb@setpdfauthor
+  {
+    \seq_set_split:NnV \l__techbrief_authors_seq { \and } \authors
+    % hyperxmp splits pdfauthor at commas into the XMP author list.
+    \tl_set:Ne \l__techbrief_pdfauthor_tl
+      { \seq_use:Nn \l__techbrief_authors_seq { ,~ } }
+    \exp_args:Ne \hypersetup
+      { pdfauthor = { \exp_not:V \l__techbrief_pdfauthor_tl } }
+  }
+\ExplSyntaxOff
+
+%% ---------------------------------------------------------------------
+%% Artwork.  Each piece is set into a box before the page picture starts,
+%% so that the nested TikZ pictures inherit none of its settings.
+\input{techbrief-logo.tex}
+\input{techbrief-cover.tex}
+% \techbriefcover{<TikZ picture or \includegraphics>} replaces the cover
+% art (202.9 x 201.1bp) for another issue.
+\newcommand\techbriefcover[1]{\renewcommand\tbcoverart{#1}}
+
+% Creative Commons BY-SA badge, drawn at the original's 33.8 x 11.8bp.
+\newcommand\tb@ccbadge{%
+  \begin{tikzpicture}[x=0.3841bp,y=0.3806bp,baseline=0pt,
+      every node/.style={inner sep=0pt,anchor=center}]
+    \fill[black] (0,0) rectangle (88,31);
+    \fill[black!32] (1,8.5) rectangle (87,30);
+    \fill[white] (16.5,15.5) circle (13.4);
+    \node[font=\fontsize{11.2bp}{11.2bp}\selectfont] at (16.5,15.5)
+      {\ccLogo};
+    \fill[white] (47,19) circle (8.6);
+    \fill[white] (66,19) circle (8.6);
+    \node[font=\fontsize{6.9bp}{6.9bp}\selectfont] at (47,19)
+      {\ccAttribution};
+    \node[font=\fontsize{6.9bp}{6.9bp}\selectfont] at (66,19)
+      {\ccShareAlike};
+    \node[white,font=\tb@verdana\bfseries\fontsize{2.4bp}{2.4bp}%
+      \selectfont] at (47,4.3) {BY};
+    \node[white,font=\tb@verdana\bfseries\fontsize{2.4bp}{2.4bp}%
+      \selectfont] at (66,4.3) {SA};
+  \end{tikzpicture}}
+
+\newsavebox\tb@coverbox
+\newsavebox\tb@ccbox
+\newsavebox\tb@logobanner
+\newsavebox\tb@logohead
+\newsavebox\tb@logofoot
+\newif\iftb@artready
+\newcommand\tb@buildart{%
+  \iftb@artready\else
+    \global\sbox\tb@ccbox{\tb@ccbadge}%
+    \global\sbox\tb@logobanner{\tblogo{1.4324}{tbsky}{white}{white}{white}}%
+    \global\sbox\tb@logohead{\tblogo{1}{tbsky}{white}{white}{white}}%
+    \global\sbox\tb@logofoot
+      {\tblogo{1.1473}{tblogoblue}{tblogoblue}{tblogodeep}{tblogodeep}}%
+    \global\tb@artreadytrue
+  \fi}
+
+\newcommand\tb@cclicense{%
+  {\tb@myriad\fontsize{8bp}{8bp}\selectfont Creative Commons license.}%
+  \hspace{1.7bp}\usebox\tb@ccbox}
+
+%% ---------------------------------------------------------------------
+%% Page furniture, painted behind each page.  The picture's origin is
+%% the top-left corner of the page, y pointing down, in bp, so every
+%% coordinate below can be checked directly against the original.
+\newif\iftb@titlepage
+\newif\iftb@backpage
+\tikzset{tb@page/.style={x=1bp,y=-1bp,overlay,inner sep=0pt,
+  anchor=base west}}
+
+\newcommand\tb@techbriefs[1]{% the TechBriefs wordmark at size #1
+  {\tb@verdana\bfseries\fontsize{#1}{#1}\selectfont
+   \textcolor{white}{Tech}\textcolor{tbsky}{Briefs}}}
+
+\def\tb@folioy{772.5}
+\newcommand\tb@footfont{\tb@myriad\bfseries\fontsize{10bp}{10bp}\selectfont}
+\newcommand\tb@footerline{%
+  \node[tb@page,text=tbnavy] at (36,772.5)
+    {\tb@footfont\tb@season\ | Issue \tb@issue};
+  \node[tb@page,text=tbnavy,anchor=base] at (306,\tb@folioy)
+    {\tb@footfont\thepage};
+  \node[tb@page,text=tbnavy,anchor=base east] at (576,772.5)
+    {\tb@footfont\tb@url};}
+
+\newcommand\tb@titlebanner{%
+  \fill[tbnavy] (-18,-18) rectangle (630,201.3);
+  \fill[tbblue] (-18,72) rectangle (409.1,139.1);
+  \draw[tbink,line width=0.5bp] (-18,139.3) -- (404,139.3);
+  \draw[tbink,line width=0.5bp] (-18,201.3) -- (448.8,201.3);
+  \node[tb@page,anchor=north west] at (409.1,0) {\usebox\tb@coverbox};
+  \node[tb@page,text=white] at (68,18.9)
+    {\tb@verdana\fontsize{9bp}{9bp}\selectfont
+     Association for Computing Machinery};
+  \draw[tbsky,line width=0.5bp] (68.9,25.4) -- (264.6,25.4);
+  \node[tb@page,anchor=north west] at (27.1,27.0) {\usebox\tb@logobanner};
+  \node[tb@page] at (158.2,54.3) {\tb@techbriefs{18bp}};
+  \node[tb@page,text=white] at (36,93.1) {\parbox[t]{365bp}{\raggedright
+    \tb@verdana\bfseries\fontsize{14.5bp}{18bp}\selectfont\@title}};
+  \node[tb@page,text=white] at (45,161.9) {\tb@verdana\bfseries
+    \fontsize{10.25bp}{10.25bp}\selectfont by \tb@byline};
+  % Footer panel with the TPC blurb.
+  \node[tb@page,anchor=base east] at (576,706.6) {\tb@cclicense};
+  \fill[tbpale] (-18,714.5) rectangle (630,810);
+  \draw[tbnavy,line width=0.5bp] (-18,714.2) -- (630,714.2);
+  \node[tb@page,text=tbink] at (36,732.8) {\parbox[t]{415.9bp}{\tb@myriad
+    \fontsize{9bp}{10.75bp}\selectfont\tb@tpcblurb}};
+  \node[tb@page,anchor=north west] at (489.6,726.3) {\usebox\tb@logofoot};}
+
+% Line breaks pinned to match the published boilerplate.
+\newcommand\tb@tpcblurb{ACM’s Technology Policy Committees provide
+  cutting-edge, apolitical, non-lobbying scientific information\linebreak
+  about all aspects of computing to policy makers in the United States
+  and Europe. To tap the deep expertise of\linebreak ACM’s 100,000
+  members worldwide, contact ACM’s Global Policy Office at acmpo@acm.org
+  or +1 202.580.6555.}
+
+\newcommand\tb@runninghead{%
+  \fill[tbnavy] (-18,-18) rectangle (630,54);
+  \node[tb@page,anchor=north west] at (36,13.0) {\usebox\tb@logohead};
+  \node[tb@page,text=white,anchor=base east] (tb@rt) at (575.8,32.6)
+    {\tb@verdanacaps\fontsize{10bp}{10bp}\selectfont
+     \MakeUppercase{\shorttitle}};
+  \draw[white,line width=1.6bp]
+    ($(tb@rt.base west)+(-9.8,-14.8)$) -- ++(0,18.9);
+  \node[tb@page,anchor=base east] at ($(tb@rt.base west)+(-18.2,0)$)
+    {\tb@techbriefs{13bp}};}
+
+\newcommand\tb@backpanel{%
+  \fill[tbpale] (-18,577.2) rectangle (630,810);
+  \draw[tbnavy,line width=0.5bp] (-18,577.0) -- (630,577.0);
+  \node[tb@page,anchor=base] at (306,596.4)
+    {\tb@heading{Additional Information}};
+  \node[tb@page,text=tbink] at (36,611.9) {\parbox[t]{541.6bp}{%
+    \tb@smallprint\tb@additionalinfo}};
+  \node[tb@page,anchor=base] at (306,689.4)
+    {\tb@heading{Acknowledgments}};
+  \node[tb@page,text=tbink] at (36,704.2) {\parbox[t]{541.6bp}{%
+    \tb@smallprint\tb@ack}};
+  \node[tb@page,text=tbink] at (36,755.8)
+    {\tb@myriad\fontsize{8bp}{8bp}\selectfont
+     \textbf{DOI:} https://doi.org/\@acmDOI};
+  \node[tb@page,text=tbink] at (212.4,755.8)
+    {\tb@myriad\fontsize{8bp}{8bp}\selectfont ISBN: \@acmISBN};
+  \node[tb@page,anchor=base east] at (576,755.8) {\tb@cclicense};}
+
+\newcommand\tb@additionalinfo{With 100,000 members in 190 countries,
+  the nonprofit Association for Computing Machinery is the world’s
+  largest and longest-running organization of professionals involved in
+  all aspects of computing. Under the auspices of the global ACM
+  Technology Policy Council, committees in the U.S. and Europe provide
+  cutting-edge, apolitical, non-lobbying information about computing
+  and its social impacts to policymakers at all levels of government in
+  many forms, including briefings, testimony, consultations, and
+  rulemaking comments, reports.\par
+  \tb@vspace{3.95bp}
+  {\centering\bfseries To tap the deep expertise of ACM’s global
+  membership, please contact ACM’s Global Policy Office at\\
+  \textit{acmpo@acm.org} or +1 202.580.6555. To receive ACM TechBriefs
+  quarterly, in the body of a one-line email send\\
+  \textit{subscribe ACM-tpc-tech-briefs} followed by your first and last
+  names to \textit{listserv@listserv.acm.org}\par}}
+
+% Spaced capitals in navy, used on the back page.
+\newcommand\tb@heading[1]{{\tb@verdanacaps\fontsize{12bp}{12bp}%
+  \selectfont\color{tbnavy}\MakeUppercase{#1}}}
+
+\AddToHook{shipout/background}{%
+  \tb@buildart
+  \iftb@titlepage \global\sbox\tb@coverbox{\tbcoverart}\fi
+  \put(0pt,0pt){%
+    \begin{tikzpicture}[tb@page]
+      \iftb@titlepage
+        \tb@titlebanner
+        \def\tb@folioy{773.2}%
+        \global\tb@titlepagefalse
+      \else
+        \tb@runninghead
+        \iftb@backpage \tb@backpanel \global\tb@backpagefalse \fi
+      \fi
+      \tb@footerline
+    \end{tikzpicture}}}
+
+%% acmart warns about every \vspace, so the layout uses these copies of
+%% LaTeX's own \vspace and \vspace* (vertical mode only).
+\newcommand\tb@vspace[1]{\vskip#1\vskip\z@skip}
+\newcommand\tb@vspacestar[1]{\par\dimen@\prevdepth\hrule\@height\z@
+  \nobreak\vskip#1\vskip\z@skip\prevdepth\dimen@}
+
+%% ---------------------------------------------------------------------
+%% Title page and body frame.
+%%
+%% \maketechbrief    paints the banner on this page and reserves its space
+%% techbriefbody     the ruled frame around the main text (breakable)
+\newcommand\maketechbrief{%
+  \thispagestyle{techbrief}%
+  \global\tb@titlepagetrue
+  \pdfstringdefDisableCommands{\def\\{ }}%
+  \hypersetup{pdftitle={\@title}}\tb@setpdfauthor
+  \enlargethispage{-58.6bp}%
+  \tb@vspacestar{\dimexpr 220.7bp-84.1bp-\topskip+\baselineskip\relax}%
+  \par\tb@vspace{-\baselineskip}}
+
+% The frame is stroked (as in the original) and closed on every page.
+\newtcolorbox{techbriefbody}{breakable,enhanced,
+  sharp corners,boxrule=0.25bp,frame hidden,colback=white,
+  overlay={\draw[tbink,line width=0.25bp]
+    ([shift={(0.1bp,0bp)}]frame.south west) rectangle
+    ([shift={(-0.1bp,0bp)}]frame.north east);},
+  boxsep=0pt,left=11.95bp,right=9.95bp,top=11.5bp,bottom=9.3bp,
+  height fixed for=first and middle,height fill,
+  before skip=0pt,after skip=0pt,
+  before upper={\setlength\parskip{4bp}\setlength\parindent{0pt}},
+  parbox=false}
+
+%% ---------------------------------------------------------------------
+%% Headings.
+%% acmart forbids redefining \section, so only its font hook is changed.
+%% The heading's baseline is set by its 12.4bp \baselineskip (the
+%% \lineskiplimit change stops a tall heading after ordinary text from
+%% falling back to \lineskip), and \tb@afterhead brings the following
+%% text to the original's 14.5bp baseline-to-baseline distance.  acmart
+%% runs \@secfont twice, so each call contributes half of the -3.9bp.
+\def\@secfont{\tb@black\fontsize{14bp}{12.4bp}\selectfont\color{tbnavy}%
+  \ifvmode\ifdim\prevdepth<4bp \lineskiplimit=-\maxdimen\fi\fi
+  \section@raggedright\aftergroup\tb@afterhead}
+\def\tb@afterhead{\nobreak\vskip-1.95bp
+  \ifdim\prevdepth>0pt \vskip-\prevdepth\prevdepth=0pt\fi}
+\setcounter{secnumdepth}{0}
+
+% Run-in bold head: \runinhead{Legal Responsibility and Liability.}
+\newcommand\runinhead[1]{\textbf{#1}\space\ignorespaces}
+
+% Italic summary paragraph; optional argument indents it (e.g. 12bp).
+\newenvironment{takeaway}[1][0bp]
+  {\par\leftskip=#1\relax\itshape}{\par}
+
+%% ---------------------------------------------------------------------
+%% Lists: navy 14bp bold bullets (sitting 1bp below the baseline, as in
+%% the original), text indented 12bp.
+\newcommand\tb@bullet{\raisebox{-1bp}{\textcolor{tbnavy}{%
+  \fontsize{14bp}{0}\selectfont\bfseries\symbol{"2022}}}}
+\setlist[itemize,1]{label=\tb@bullet,
+  leftmargin=12bp,labelwidth=12bp,labelsep=0pt,align=left,
+  topsep=12bp,partopsep=0pt,itemsep=4bp,parsep=0pt,
+  after=\tb@vspace{-4bp}}
+\setlist[itemize,2]{label=\tb@bullet,
+  leftmargin=11.5bp,labelwidth=11.5bp,labelsep=0pt,align=left,
+  topsep=4bp,partopsep=0pt,itemsep=4bp,parsep=0pt}
+
+%% ---------------------------------------------------------------------
+%% Tables: a non-floating table (floats cannot live inside the frame).
+%%   \begin{techbrieftable}{Caption}{L{115.3bp}L{171.7bp}...}
+%%     \rowcolor{tbblue} & \tbhead{A} & \tbhead{B} \tbheadend
+%%     \tbrowhead{Row} & ... & ... \\
+%%   \end{techbrieftable}
+% Ragged-right column whose width includes a 6bp gutter on its right
+% (kept inside the cell so that \rowcolor covers it).
+\newcolumntype{L}[1]{>{\raggedright\rightskip=6bp plus 1fil
+  \arraybackslash}p{#1}}
+\DeclareCaptionLabelSeparator{tbcolon}{:\hspace{3.6bp}}
+\captionsetup[table]{hypcap=false,labelfont={rm,bf,normalsize,color=tbblue},
+  textfont={rm,bf,normalsize},
+  labelsep=tbcolon,justification=raggedright,singlelinecheck=false,
+  skip=3.2bp,position=top}
+\newenvironment{techbrieftable}[2]
+  {\par\tb@vspace{6.2bp}\noindent
+   \begin{minipage}{\linewidth}%
+   \captionof{table}{#1}%
+   \tb@tablesize\setlength\tabcolsep{0pt}%
+   \setlength\extrarowheight{1.9bp}%
+   \arrayrulecolor{tbink}\setlength\arrayrulewidth{0.8bp}%
+   \begin{tabular}{#2}\hline}
+  {\noalign{\vskip 3.9bp}\hline\end{tabular}\end{minipage}\par}
+% Header cell: white Black-weight text on the 18.9bp blue band; end the
+% header row with \tbheadend rather than \\.
+\newcommand\tbheadend{\\\noalign{\vskip 2.65bp}}
+\newcommand\tbhead[1]{\rule[-6.8bp]{0pt}{18.9bp}%
+  \textcolor{white}{\tb@black #1}}
+\newcommand\tbrowhead[1]{\textbf{#1}}
+
+%% Figures: likewise non-floating, with the same caption style.
+%%   \begin{techbrieffigure}{Caption}
+%%     \includegraphics[width=\linewidth]{diagram.pdf}
+%%   \end{techbrieffigure}
+\captionsetup[figure]{hypcap=false,name=Figure,
+  labelfont={rm,bf,normalsize,color=tbblue},textfont={rm,bf,normalsize},
+  labelsep=tbcolon,justification=raggedright,singlelinecheck=false,
+  skip=3.2bp,position=top}
+\newenvironment{techbrieffigure}[1]
+  {\par\tb@vspace{6.2bp}\noindent
+   \begin{minipage}{\linewidth}%
+   \captionof{figure}{#1}\centering}
+  {\end{minipage}\par\tb@vspace{4bp}}
+
+%% ---------------------------------------------------------------------
+%% Back page: references, plus the information panel at the foot.
+%% References are numbered in citation order and cited as superscripts.
+\newcounter{tb@backpage}
+\newcommand\techbriefbackpage{%
+  \clearpage\global\tb@backpagetrue\setcounter{tb@backpage}{\value{page}}}
+% The panel starts 577.2bp down the page; the references must stay above it.
+\newcommand\tb@checkbackpage{%
+  \ifnum\value{page}>\value{tb@backpage}%
+    \PackageWarningNoLine{techbrief}{The references run past the back
+      page.\MessageBreak Shorten them or remove some}%
+  \else\ifdim\pagetotal>480bp
+    \PackageWarningNoLine{techbrief}{The references overlap the
+      Additional\MessageBreak Information panel on the back page}%
+  \fi\fi}
+
+\renewcommand*\supercitedelim{,}
+% Superscript citations as in the original: 5.83bp figures raised 3.3bp,
+% smashed so that they never open up the line spacing.
+\renewrobustcmd*\mkbibsuperscript[1]{\unspace\smash{\raisebox{3.3bp}{%
+  \fontsize{5.83bp}{0}\selectfont #1}}}
+\AtBeginDocument{\let\cite\supercite}
+\DeclareFieldFormat{labelnumberwidth}{#1}
+% Keep titles as entered, print DOIs as resolvable URLs, and break URLs
+% only at punctuation such as `/', as the original does.
+\DeclareFieldFormat{titlecase}{#1}
+\DeclareFieldFormat{doi}{\url{https://doi.org/#1}}
+\setcounter{biburlnumpenalty}{0}
+\setcounter{biburlucpenalty}{0}
+\setcounter{biburllcpenalty}{0}
+% acmnumeric.bbx sets \bibfont when biblatex loads it, so override later.
+\AtBeginDocument{\renewcommand*\bibfont{\tb@bibsize}}
+\defbibheading{bibliography}[\refname]{%
+  \tb@vspacestar{-16.3bp}%
+  {\centering\tb@heading{#1}\par}%
+  \tb@vspace{4.8bp}}
+\defbibenvironment{bibliography}
+  {\list{\printfield[labelnumberwidth]{labelnumber}}
+     {\setlength\labelwidth{9.1bp}\setlength\labelsep{4.7bp}%
+      \setlength\leftmargin{13.8bp}\setlength\itemsep{0pt}%
+      \setlength\parsep{0pt}\setlength\topsep{0pt}%
+      \setlength\partopsep{0pt}%
+      \renewcommand*\makelabel[1]{\hss##1}}%
+   \sloppy\frenchspacing\biburlsetup
+   \lineskiplimit=-\maxdimen}% fixed 7.25bp leading, as in the original
+  {\endlist\endgraf\tb@checkbackpage}
+  {\item}
+\endinput
