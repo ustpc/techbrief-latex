@@ -11,24 +11,25 @@ typeface is free.
 
 | File | Purpose |
 | --- | --- |
-| `techbrief-template.tex` / `.bib` | Blank TechBrief to copy and fill in |
+| `your-techbrief.tex` / `.bib` | **Your TechBrief: fill these in** |
+| `techbrief-template.tex` / `.bib` | Pristine blank copy of `your-techbrief`, for starting over |
 | `techbrief-sample.tex` / `.bib` | Complete worked example: Issue 18, *Autonomy, Opportunities, and Challenges of Action-Taking AI Systems* |
 | `techbrief.sty` | The TechBrief layout, loaded after `acmart` |
 | `techbrief-cover.tex` | Default cover art (TikZ) |
 | `techbrief-logo.tex` | ACM Technology Policy Council logo (TikZ) |
+| `fonts/` | Source Serif Pro and Source Sans Pro, the exact fonts the layout is calibrated against (SIL Open Font License; see the `LICENSE-*.txt` files) |
 | `acmart-primary/` | The acmart class, unmodified. 2026/08/16 v2.20. Downloaded from https://www.acm.org/publications/proceedings-template |
 | `Makefile` | Builds everything |
 
 ## Quick start
 
-```bash
-cp techbrief-template.tex mybrief.tex
-cp techbrief-template.bib mybrief.bib
-# edit mybrief.tex and mybrief.bib, then:
-make DOC=mybrief
-```
+1. Fill out `your-techbrief.tex`: replace every ALL-CAPS placeholder and
+   every item marked `CHANGE`.
+2. Put your references in `your-techbrief.bib`.
+3. Run `make`. It builds `your-techbrief.pdf`.
 
-`make` on its own builds `techbrief-sample.pdf` and `techbrief-template.pdf`.
+`techbrief-sample.tex` is a complete worked example (Issue 18) to copy
+from. `make examples` builds it and the blank template.
 
 Note: This works on MacOS and Linux. If you are working on Windows, we
 recommend operating inside WSL (Windows Subsystem for Linux).
@@ -36,16 +37,32 @@ recommend operating inside WSL (Windows Subsystem for Linux).
 ### Requirements
 
 A recent TeX Live (2025 or later) with `lualatex`, `biber` and `latexmk`.
-Everything else ships with TeX Live:
 
-- **Fonts:** Source Serif Pro, Source Sans Pro, DejaVu Sans, `ccicons`
-- **Packages:** `fontspec`, `tikz`, `tcolorbox`, `enumitem`, `colortbl`,
-  `biblatex`
+- **Fonts:** Source Serif Pro and Source Sans Pro are bundled in `fonts/`.
+  DejaVu Sans and `ccicons` come from TeX Live.
+- **Packages:** `acmart`, `fontspec`, `tikz`, `tcolorbox`, `enumitem`,
+  `colortbl`, `biblatex`, all from TeX Live.
 
 The document must be compiled with **LuaLaTeX** (XeLaTeX also works), since
 the layout uses OpenType fonts. The Makefile puts `acmart-primary/` first on
-the TeX search path so that its `acmart.cls` and biblatex styles are used,
-even when TeX Live ships an older copy.
+the TeX search path, so its `acmart.cls` is used when present; otherwise TeX
+Live's copy is used.
+
+Keep `fonts/` next to your `.tex` file. TeX Live 2026 replaced Source Serif
+Pro and Source Sans Pro with Source Serif 4 and Source Sans 3, which have new
+file names and different metrics. Without `fonts/`, `techbrief.sty` falls
+back to the installed fonts and warns that line breaks will differ from the
+published TechBrief.
+
+### Overleaf
+
+1. Bring the whole repository into the project, including `fonts/`, by
+   GitHub sync or by uploading a zip.
+2. Open **Menu → Compiler** and choose **LuaLaTeX** (or XeLaTeX). pdfLaTeX
+   stops with an error.
+3. Open **Menu → Main document** and choose `your-techbrief.tex`.
+
+Overleaf runs biber automatically and uses its own copy of acmart.
 
 ## Formatting your TechBrief
 
@@ -54,7 +71,7 @@ even when TeX Live ships an older copy.
 ```latex
 \documentclass[acmlarge,nonacm,natbib=false]{acmart}
 \usepackage{techbrief}
-\addbibresource{mybrief.bib}
+\addbibresource{your-techbrief.bib}
 
 \acmDOI{10.1145/XXXXXXX}          % back page
 \acmISBN{979-8-4007-XXXX-X}       % back page
@@ -248,8 +265,8 @@ produce the same one.
 
 | Target | Action |
 | --- | --- |
-| `make` | Build `techbrief-sample.pdf` and `techbrief-template.pdf` |
-| `make DOC=name` | Build `name.tex` (with `name.bib`) |
-| `make compare` | Write 100 dpi PNGs of the original and the sample to `compare/` |
+| `make` | Build `your-techbrief.pdf` |
+| `make DOC=name` | Build `name.tex` (with `name.bib`) instead |
+| `make examples` | Build `techbrief-sample.pdf` and `techbrief-template.pdf` |
 | `make clean` | Remove build products, keeping the PDFs |
 | `make distclean` | Remove build products and the PDFs |

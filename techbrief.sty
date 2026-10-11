@@ -57,21 +57,46 @@
 
 %% ---------------------------------------------------------------------
 %% Fonts.
-\setmainfont{SourceSerifPro}[
-  Extension=.otf,
-  UprightFont=*-Regular, ItalicFont=*-RegularIt,
-  BoldFont=*-Bold, BoldItalicFont=*-BoldIt,
-  LetterSpace=-0.5, Numbers=Lining]
-\setsansfont{SourceSansPro}[
-  Extension=.otf,
-  UprightFont=*-Regular, ItalicFont=*-RegularIt,
-  BoldFont=*-Semibold, BoldItalicFont=*-SemiboldIt]
-\newfontfamily\tb@black{SourceSerifPro-Black.otf}[Numbers=Lining]
+%%
+%% The layout is calibrated against Source Serif Pro and Source Sans Pro.
+%% TeX Live 2026 replaced those with Source Serif 4 and Source Sans 3
+%% (new file names, different metrics), so the exact fonts ship in the
+%% fonts/ directory next to this file.  They are looked up in order:
+%%   1. \techbrieffontdir (default fonts/), the bundled copies;
+%%   2. an installed Source Serif Pro / Source Sans Pro (TeX Live <= 2025);
+%%   3. an installed Source Serif 4 / Source Sans 3, with a warning that
+%%      line breaks will differ from the published TechBrief.
+%% Define \techbrieffontdir before \usepackage{techbrief} to move fonts/.
+\providecommand\techbrieffontdir{fonts/}
+\IfFileExists{\techbrieffontdir SourceSerifPro-Regular.otf}
+  {\edef\tb@fontopts{Path=\techbrieffontdir,}%
+   \def\tb@serif{SourceSerifPro}\def\tb@sans{SourceSansPro}}
+  {\def\tb@fontopts{}%
+   \IfFontExistsTF{SourceSerifPro-Regular.otf}
+     {\def\tb@serif{SourceSerifPro}\def\tb@sans{SourceSansPro}}
+     {\def\tb@serif{SourceSerif4}\def\tb@sans{SourceSans3}%
+      \PackageWarningNoLine{techbrief}{The bundled fonts in
+        \techbrieffontdir\space were not found;\MessageBreak
+        using Source Serif 4 and Source Sans 3 instead.\MessageBreak
+        Line breaks will differ from the published TechBrief}}}
+\edef\tb@loadfonts{%
+  \noexpand\setmainfont{\tb@serif}[\tb@fontopts
+    Extension=.otf,
+    UprightFont=*-Regular, ItalicFont=*-RegularIt,
+    BoldFont=*-Bold, BoldItalicFont=*-BoldIt,
+    LetterSpace=-0.5, Numbers=Lining]%
+  \noexpand\setsansfont{\tb@sans}[\tb@fontopts
+    Extension=.otf,
+    UprightFont=*-Regular, ItalicFont=*-RegularIt,
+    BoldFont=*-Semibold, BoldItalicFont=*-SemiboldIt]%
+  \noexpand\newfontfamily\noexpand\tb@black{\tb@serif-Black.otf}[%
+    \tb@fontopts Numbers=Lining]%
+  \noexpand\newfontfamily\noexpand\tb@myriad{\tb@sans}[\tb@fontopts
+    Extension=.otf, UprightFont=*-Regular, BoldFont=*-Semibold]}
+\tb@loadfonts
 \newfontfamily\tb@verdana{DejaVuSans}[
   Extension=.ttf, UprightFont=*, BoldFont=*-Bold]
 \newfontfamily\tb@verdanacaps{DejaVuSans-Bold.ttf}[LetterSpace=4.7]
-\newfontfamily\tb@myriad{SourceSansPro}[
-  Extension=.otf, UprightFont=*-Regular, BoldFont=*-Semibold]
 
 \renewcommand\normalsize{\@setfontsize\normalsize{10bp}{11.5bp}}
 \newcommand\tb@tablesize{\fontsize{9bp}{10.5bp}\selectfont}

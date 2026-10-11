@@ -15,3 +15,5 @@ techbrief-template.pdf
 compare/
 .DS_Store
 *.bbl-SAVE-ERROR
+.tmp/
+your-techbrief.pdf
